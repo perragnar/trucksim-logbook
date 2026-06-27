@@ -1,0 +1,294 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* mode-watcher toggles `.dark` on <html>; this variant lets Tailwind's
+   `dark:` utilities (and shadcn components) respond to it. */
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   Brand palette. These variable NAMES are used throughout the app's scoped
+   component styles and the SVG charts, so they must stay stable. Only the
+   neutral surfaces/text flip between light and dark; the game accents
+   (ets2/ats/global) keep their identity across themes.
+   :root = light theme, .dark = the original dark theme.
+--------------------------------------------------------------------------- */
+:root {
+	--bg: #f3f5f6;
+	--panel: #ffffff;
+	--panel-2: #eef2f3;
+	--border: #d6dee1;
+	--text: #1a2429;
+	--muted: #5d6f76;
+	--accent: #d97916;
+	--accent-2: #1f8aa0;
+	--ets2: #1f8aa0;
+	--ats: #d97916;
+	--global: #5a9e2f;
+	--danger: #cf3f38;
+	font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.dark {
+	--bg: #12181b;
+	--panel: #1b2528;
+	--panel-2: #223035;
+	--border: #2e4047;
+	--text: #e7eef0;
+	--muted: #8ba3ab;
+	--accent: #f0922b;
+	--accent-2: #4fb0c6;
+	--ets2: #4fb0c6;
+	--ats: #f0922b;
+	--global: #9bd167;
+	--danger: #e0564f;
+}
+
+/* ---------------------------------------------------------------------------
+   Accent theme presets (set via data-theme on <html>). They only re-tint the
+   generic UI accent (--accent / --accent-2); the game colours (ets2/ats/global)
+   stay fixed since they're semantic. Each has a light + dark variant. Default
+   = no data-theme (uses the values above). Placed after :root/.dark so equal-
+   specificity rules win by source order.
+--------------------------------------------------------------------------- */
+[data-accent='forest'] {
+	--accent: #2f9e44;
+	--accent-2: #1f8a8a;
+}
+.dark[data-accent='forest'] {
+	--accent: #51cf66;
+	--accent-2: #4fc6c6;
+}
+[data-accent='royal'] {
+	--accent: #5b54d6;
+	--accent-2: #9333ea;
+}
+.dark[data-accent='royal'] {
+	--accent: #8b85ff;
+	--accent-2: #c084fc;
+}
+[data-accent='crimson'] {
+	--accent: #d62839;
+	--accent-2: #d6336c;
+}
+.dark[data-accent='crimson'] {
+	--accent: #ff6b6b;
+	--accent-2: #f783ac;
+}
+[data-accent='blue'] {
+	--accent: #2563eb;
+	--accent-2: #0891b2;
+}
+.dark[data-accent='blue'] {
+	--accent: #60a5fa;
+	--accent-2: #22d3ee;
+}
+[data-accent='yellow'] {
+	--accent: #ca8a04;
+	--accent-2: #0d9488;
+}
+.dark[data-accent='yellow'] {
+	--accent: #fde047;
+	--accent-2: #2dd4bf;
+}
+
+/* ---------------------------------------------------------------------------
+   shadcn-svelte token layer. Kept under distinct `--sd-*` names so they never
+   clash with the brand vars above (notably brand --accent = orange vs
+   shadcn's --accent = subtle hover surface). They derive from the brand vars,
+   so they re-theme automatically.
+--------------------------------------------------------------------------- */
+:root {
+	--sd-background: var(--bg);
+	--sd-foreground: var(--text);
+	--sd-card: var(--panel);
+	--sd-card-foreground: var(--text);
+	--sd-popover: var(--panel);
+	--sd-popover-foreground: var(--text);
+	--sd-primary: var(--accent);
+	--sd-primary-foreground: #1a1207;
+	--sd-secondary: var(--panel-2);
+	--sd-secondary-foreground: var(--text);
+	--sd-muted: var(--panel-2);
+	--sd-muted-foreground: var(--muted);
+	--sd-accent: var(--panel-2);
+	--sd-accent-foreground: var(--text);
+	--sd-destructive: var(--danger);
+	--sd-destructive-foreground: #ffffff;
+	--sd-border: var(--border);
+	--sd-input: var(--border);
+	--sd-ring: var(--accent-2);
+	--radius: 0.6rem;
+}
+
+@theme inline {
+	--color-background: var(--sd-background);
+	--color-foreground: var(--sd-foreground);
+	--color-card: var(--sd-card);
+	--color-card-foreground: var(--sd-card-foreground);
+	--color-popover: var(--sd-popover);
+	--color-popover-foreground: var(--sd-popover-foreground);
+	--color-primary: var(--sd-primary);
+	--color-primary-foreground: var(--sd-primary-foreground);
+	--color-secondary: var(--sd-secondary);
+	--color-secondary-foreground: var(--sd-secondary-foreground);
+	--color-muted: var(--sd-muted);
+	--color-muted-foreground: var(--sd-muted-foreground);
+	--color-accent: var(--sd-accent);
+	--color-accent-foreground: var(--sd-accent-foreground);
+	--color-destructive: var(--sd-destructive);
+	--color-destructive-foreground: var(--sd-destructive-foreground);
+	--color-border: var(--sd-border);
+	--color-input: var(--sd-input);
+	--color-ring: var(--sd-ring);
+
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+	* {
+		border-color: var(--border);
+	}
+}
+
+/* ---------------------------------------------------------------------------
+   Existing base styles (unchanged behaviour — they read the brand vars).
+--------------------------------------------------------------------------- */
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+	line-height: 1.5;
+}
+
+a {
+	color: var(--accent-2);
+}
+
+h1,
+h2,
+h3 {
+	font-weight: 600;
+	letter-spacing: 0.2px;
+}
+/* Tailwind's preflight strips default heading size/margins, so set our own. */
+h1 {
+	font-size: 1.6rem;
+	margin: 0 0 1rem;
+}
+h2 {
+	font-size: 1.2rem;
+	margin: 0 0 0.75rem;
+}
+h3 {
+	font-size: 1.05rem;
+	margin: 0 0 0.5rem;
+}
+
+.wrap {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 1.5rem;
+}
+
+.panel {
+	background: var(--panel);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 1.25rem;
+}
+
+.muted {
+	color: var(--muted);
+}
+
+.grid {
+	display: grid;
+	gap: 1rem;
+}
+
+.btn {
+	background: var(--accent);
+	color: #1a1207;
+	border: none;
+	border-radius: 8px;
+	padding: 0.5rem 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	font-size: 0.95rem;
+}
+.btn:hover {
+	filter: brightness(1.08);
+}
+.btn:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+.btn-ghost {
+	background: transparent;
+	border: 1px solid var(--border);
+	color: var(--text);
+}
+.btn-sm {
+	padding: 0.25rem 0.6rem;
+	font-size: 0.82rem;
+	border-radius: 6px;
+	cursor: pointer;
+}
+.btn-danger {
+	background: transparent;
+	border: 1px solid var(--danger);
+	color: var(--danger);
+	padding: 0.25rem 0.6rem;
+	font-size: 0.85rem;
+}
+
+input,
+select,
+textarea {
+	background: var(--panel-2);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	color: var(--text);
+	padding: 0.5rem 0.65rem;
+	font-size: 0.95rem;
+	width: 100%;
+}
+
+label {
+	display: block;
+	font-size: 0.8rem;
+	color: var(--muted);
+	margin-bottom: 0.25rem;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+th,
+td {
+	text-align: left;
+	padding: 0.5rem 0.65rem;
+	border-bottom: 1px solid var(--border);
+	font-size: 0.92rem;
+}
+th {
+	color: var(--muted);
+	font-weight: 500;
+}
+
+.tag {
+	display: inline-block;
+	font-size: 0.72rem;
+	padding: 0.1rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--border);
+	color: var(--muted);
+}

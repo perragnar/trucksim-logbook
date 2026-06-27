@@ -1,0 +1,6 @@
+# Static, read-only snapshot deploy. Run `npm run scrape` locally first to
+# refresh data/trucksim.db, then build the prerendered site. The build reads the
+# committed SQLite DB at build time and bakes the data into static HTML.
+[build]
+  command = "npm run build:static"
+  publish = "build"

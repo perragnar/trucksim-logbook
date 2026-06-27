@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -m 15 -A \"trucksim-logbook/1.0 \\(perragnar@hackyard.se\\)\" \"https://nominatim.openstreetmap.org/search?format=jsonp&json_callback=x&city=Kennewick&state=Washington&country=USA&limit=1\")",
+      "Bash(curl -s -m 15 -A \"trucksim-logbook/1.0 \\(perragnar@hackyard.se\\)\" \"https://nominatim.openstreetmap.org/search?format=json&city=Kennewick&state=Washington&country=USA&limit=1\")",
+      "Bash(tee /tmp/build-cities.log)",
+      "Bash(sleep 20; head -15 /tmp/build-cities.log)",
+      "Bash(npx tsx *)",
+      "Bash(sqlite3 data/trucksim.db \"SELECT raw FROM jobs WHERE raw IS NOT NULL LIMIT 1;\")",
+      "Bash(sqlite3 data/trucksim.db \"SELECT game, count\\(*\\), count\\(distance_km\\), count\\(mass_t\\), count\\(revenue\\), count\\(delivered_at\\) FROM jobs GROUP BY game;\")",
+      "Bash(node -e \"const u=require\\('./src/lib/server/geo/us.json'\\);console.log\\('us top keys:',Object.keys\\(u\\)\\);console.log\\('first ring sample:',JSON.stringify\\(u.rings?.[0]?.slice\\(0,2\\)\\)\\);\")",
+      "Bash(node -e \"const u=require\\('./src/lib/server/geo/us.json'\\);const e=require\\('./src/lib/server/geo/europe.json'\\);console.log\\('US:',u.regions.map\\(r=>r.name\\).slice\\(0,8\\).join\\(', '\\),'…'\\);console.log\\('EU:',e.regions.map\\(r=>r.name\\).sort\\(\\).join\\(', '\\)\\);\")",
+      "Bash(npm -v)",
+      "Bash(npx svelte-kit *)",
+      "Bash(npx shadcn-svelte@latest init --base-color stone --css src/app.css --skip-preflight)"
+    ]
+  }
+}
