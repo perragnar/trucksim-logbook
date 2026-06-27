@@ -7,7 +7,7 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"build:static": "VITE_STATIC=true vite build",
-		"publish": "npm run scrape && npm run build:static && npx -y netlify-cli deploy --prod --dir build",
+		"publish": "npm run scrape && npm run build:static && npm_config_cache=\"$HOME/.cache/trucksim-npm\" npx -y netlify-cli deploy --prod --dir build",
 		"preview": "vite preview",
 		"scrape": "tsx scripts/scrape.ts",
 		"build:geo": "tsx scripts/build-geo.ts",
