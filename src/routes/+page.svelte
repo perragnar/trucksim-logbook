@@ -402,11 +402,11 @@
 						{#each a.latest as b}
 							<tr>
 								<td class="when">{b.when ? formatDateTime(b.when) : '—'}</td>
-								<td>
+								<td class="route">
 									{#if gameFilter.current === 'all'}<GameFlag game={b.game} height="0.9em" />{' '}{/if}<span class="place">{b.from}{#if b.fromCode}{' '}<span class="muted">({b.fromCode})</span>{/if}</span> →
 									<span class="place">{b.to}{#if b.toCode}{' '}<span class="muted">({b.toCode})</span>{/if}</span>
 								</td>
-								<td class="muted">{b.cargo ?? '—'}</td>
+								<td class="cargo muted">{b.cargo ?? '—'}</td>
 								<td class="num">{d(b.dist)}</td>
 							</tr>
 						{/each}
@@ -1177,6 +1177,48 @@
 	@media (max-width: 640px) {
 		.curves {
 			grid-template-columns: 1fr;
+		}
+		/* Latest hauls: reflow each row into a compact 2×2 card. */
+		.latesthauls thead {
+			display: none;
+		}
+		.latesthauls,
+		.latesthauls tbody {
+			display: block;
+		}
+		.latesthauls tr {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			grid-template-areas:
+				'route dist'
+				'when cargo';
+			gap: 0.1rem 0.75rem;
+			align-items: baseline;
+			padding: 0.55rem 0;
+			border-bottom: 1px solid var(--border);
+		}
+		.latesthauls tbody tr:last-child {
+			border-bottom: none;
+		}
+		.latesthauls td {
+			display: block;
+			border: none;
+			padding: 0;
+		}
+		.latesthauls td.route {
+			grid-area: route;
+		}
+		.latesthauls td.num {
+			grid-area: dist;
+		}
+		.latesthauls td.when {
+			grid-area: when;
+			font-size: 0.78rem;
+		}
+		.latesthauls td.cargo {
+			grid-area: cargo;
+			font-size: 0.78rem;
+			text-align: right;
 		}
 	}
 </style>
