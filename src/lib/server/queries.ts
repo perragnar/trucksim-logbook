@@ -13,6 +13,7 @@ import type { SteamProgress } from './steam';
 import { desc, eq, and, asc } from 'drizzle-orm';
 import type { Game } from './scraper/parse';
 import { regionOf } from './scraper/parse';
+import { regionCode } from './regionCodes';
 import { resolvedCoords } from './cityResolve';
 import type { LatLng } from './cityCoords';
 
@@ -236,18 +237,31 @@ export function jobAnalytics(game: GameFilter = 'all') {
 	const totalDist = Math.round(cumDist);
 	const totalMass = Math.round(all.reduce((s, j) => s + (j.massT ?? 0), 0));
 
-	// Biggest hauls — top 5 by distance.
-	const biggest = [...all]
-		.sort((a, b) => dist(b) - dist(a))
-		.slice(0, 5)
-		.map((j) => ({
+	// Compact summary of a job for the haul lists (Biggest / Latest).
+	const summarize = (j: (typeof all)[number]) => {
+		const f = rawFields(j.raw);
+		return {
+			game: j.game,
 			from: j.fromCity,
+			fromCode: regionCode(j.game, regionOf(f['Origin'])),
 			to: j.toCity,
+			toCode: regionCode(j.game, regionOf(f['Destination'])),
 			cargo: j.cargo,
 			dist: Math.round(dist(j)),
 			mass: j.massT,
 			when: j.deliveredAt
-		}));
+		};
+	};
+
+	// Biggest hauls — top 5 by distance.
+	const biggest = [...all].sort((a, b) => dist(b) - dist(a)).slice(0, 5).map(summarize);
+
+	// Latest hauls — most recent deliveries by completion time.
+	const latest = all
+		.filter((j) => j.deliveredAt != null)
+		.sort((a, b) => (b.deliveredAt as number) - (a.deliveredAt as number))
+		.slice(0, 5)
+		.map(summarize);
 
 	// Average delivery time, from each job's Taken → Completed timestamps.
 	let durSum = 0;
@@ -401,6 +415,7 @@ export function jobAnalytics(game: GameFilter = 'all') {
 		byHour,
 		haul,
 		biggest,
+		latest,
 		recent,
 		avgDurationMin,
 		cleanRate,

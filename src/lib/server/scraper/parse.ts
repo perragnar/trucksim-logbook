@@ -137,6 +137,24 @@ export function distanceToKm(raw: string): number | null {
 	return /\bmi\b/i.test(raw) ? Math.round(n * 1.60934) : n;
 }
 
+/**
+ * Stable dedup key for a delivery. Built only from fields that don't change
+ * between scrapes — game, cargo, route, and distance normalised to whole km.
+ * It deliberately excludes the completion date (often missing on a freshly
+ * delivered job) and the raw distance unit (km vs mi follows the player's WoT
+ * display preference and can differ between jobs). Both previously leaked into
+ * the key and spawned duplicate rows for a single real delivery.
+ */
+export function jobKey(j: {
+	game: string;
+	cargo: string | null;
+	fromCity: string | null;
+	toCity: string | null;
+	distanceKm: number | null;
+}): string {
+	return `${j.game}|${j.cargo ?? ''}|${j.fromCity ?? ''}->${j.toCity ?? ''}|${j.distanceKm ?? ''}`;
+}
+
 /** Parse a "June 12, 2026 at 7:50 PM" timestamp to unix ms. */
 export function parseWotDate(s: string | undefined): number | null {
 	if (!s) return null;
@@ -163,6 +181,12 @@ export function parseJobLog(html: string): ParsedJob[] {
 			if (left) fields[left] = right;
 		});
 
+		// Skip in-progress external contracts: the Log Book lists them too, but
+		// they show a "Time left" countdown and no "Completed" date. They belong
+		// to Current jobs, not the delivery log — including them adds a dateless,
+		// not-actually-delivered row (and pollutes Biggest/Latest hauls).
+		if (!fields['Completed']) return;
+
 		const distanceRaw = fields['Distance'] ?? $job.find('.distance').clone().children().remove().end().text().trim();
 		const game = gameFromRegions(fields['Origin'], fields['Destination']);
 
@@ -172,16 +196,17 @@ export function parseJobLog(html: string): ParsedJob[] {
 		const fromCompany = fields['Sender'] || null;
 		const toCompany = fields['Recipient'] || null;
 		const completedRaw = fields['Completed'];
+		const distanceKm = distanceToKm(distanceRaw);
 
 		out.push({
-			externalId: `${completedRaw ?? ''}|${cargo ?? ''}|${fromCity ?? ''}->${toCity ?? ''}|${distanceRaw}`,
+			externalId: jobKey({ game, cargo, fromCity, toCity, distanceKm }),
 			game,
 			cargo,
 			fromCity,
 			fromCompany,
 			toCity,
 			toCompany,
-			distanceKm: distanceToKm(distanceRaw),
+			distanceKm,
 			massT: parseStatValue(fields['Mass'] ?? ''),
 			deliveredAt: parseWotDate(completedRaw),
 			takenAt: parseWotDate(fields['Taken']),

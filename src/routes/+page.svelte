@@ -9,6 +9,7 @@
 	import CoverageMap from '$lib/charts/CoverageMap.svelte';
 	import HourClock from '$lib/charts/HourClock.svelte';
 	import { formatDateTime } from '$lib/format';
+	import GameFlag from '$lib/components/GameFlag.svelte';
 	import { gameFilter } from '$lib/gameFilter.svelte';
 	import { widgetEnabled, orderedWidgets } from '$lib/widgets';
 	let { data } = $props();
@@ -158,11 +159,6 @@
 					</div>
 					<div class="muted">{p.country ?? ''}</div>
 				</div>
-				<div class="achsum">
-					<div class="muted lbl">Achievements</div>
-					<div class="achval">{p.achievements.earned} / {p.achievements.total}</div>
-					<div class="pbar"><div class="pfill" style="width:{p.achievements.percent}%"></div></div>
-				</div>
 			</section>
 		{/if}
 	{:else if id === 'current-jobs'}
@@ -175,9 +171,7 @@
 						<div class="curjob">
 							<div class="cjhead">
 								<div class="cjcargo">{j.cargo ?? 'Contract'}</div>
-								<span class="tag" style="border-color:{gameColor[j.game]}; color:{gameColor[j.game]}"
-									>{gameLabel[j.game]}</span
-								>
+								<GameFlag game={j.game} height="1em" />
 							</div>
 							<div class="cjroute">
 								<strong>{j.fromCity ?? '—'}</strong>{#if j.fromCompany}<span class="muted">
@@ -219,9 +213,7 @@
 							{/if}
 							<div class="trow">
 								<div class="tname">{t.name}</div>
-								<span class="tag" style="border-color:{gameColor[t.game]}; color:{gameColor[t.game]}"
-									>{gameLabel[t.game]}</span
-								>
+								<GameFlag game={t.game} height="1em" />
 							</div>
 							{#if t.plateFrontUrl}
 								<img class="plate" src={t.plateFrontUrl} alt={t.plate} referrerpolicy="no-referrer" />
@@ -380,9 +372,41 @@
 							<tr>
 								<td class="rank">{i + 1}</td>
 								<td>
-									<div>{b.from} → {b.to}</div>
+									<div>
+										{#if gameFilter.current === 'all'}<GameFlag game={b.game} height="0.9em" />{' '}{/if}<span class="place">{b.from}{#if b.fromCode}{' '}<span class="muted">({b.fromCode})</span>{/if}</span> →
+										<span class="place">{b.to}{#if b.toCode}{' '}<span class="muted">({b.toCode})</span>{/if}</span>
+									</div>
 									{#if b.cargo}<div class="muted small">{b.cargo}</div>{/if}
 								</td>
+								<td class="num">{d(b.dist)}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</section>
+		{/if}
+	{:else if id === 'latest-hauls'}
+		{#if data.snapshot && a}
+			<section class="panel" class:wide>
+				<h3>Latest hauls</h3>
+				<table class="latesthauls">
+					<thead>
+						<tr>
+							<th>Delivered</th>
+							<th>Route</th>
+							<th>Cargo</th>
+							<th class="num">Distance</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each a.latest as b}
+							<tr>
+								<td class="when">{b.when ? formatDateTime(b.when) : '—'}</td>
+								<td>
+									{#if gameFilter.current === 'all'}<GameFlag game={b.game} height="0.9em" />{' '}{/if}<span class="place">{b.from}{#if b.fromCode}{' '}<span class="muted">({b.fromCode})</span>{/if}</span> →
+									<span class="place">{b.to}{#if b.toCode}{' '}<span class="muted">({b.toCode})</span>{/if}</span>
+								</td>
+								<td class="muted">{b.cargo ?? '—'}</td>
 								<td class="num">{d(b.dist)}</td>
 							</tr>
 						{/each}
@@ -891,13 +915,6 @@
 		height: 18px;
 		border-radius: 2px;
 	}
-	.achsum {
-		min-width: 200px;
-	}
-	.achval {
-		font-size: 1.1rem;
-		font-weight: 700;
-	}
 	.pbar {
 		background: var(--panel-2);
 		border-radius: 999px;
@@ -992,6 +1009,10 @@
 		padding: 0.3rem 0.4rem;
 		vertical-align: top;
 	}
+	/* Keep a city and its country/state code together; only break at the arrow. */
+	.biggest .place {
+		white-space: nowrap;
+	}
 	.biggest .rank {
 		color: var(--muted);
 		font-weight: 700;
@@ -1004,6 +1025,41 @@
 	}
 	.biggest .small {
 		font-size: 0.78rem;
+	}
+
+	/* Latest hauls */
+	.latesthauls {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	.latesthauls th {
+		text-align: left;
+		font-weight: 600;
+		color: var(--muted);
+		font-size: 0.8rem;
+		padding: 0.35rem 0.5rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.latesthauls td {
+		padding: 0.45rem 0.5rem;
+		border-bottom: 1px solid var(--border);
+		vertical-align: top;
+	}
+	.latesthauls tbody tr:last-child td {
+		border-bottom: none;
+	}
+	.latesthauls .place {
+		white-space: nowrap;
+	}
+	.latesthauls .when {
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+	.latesthauls th.num,
+	.latesthauls td.num {
+		text-align: right;
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* Achievements */

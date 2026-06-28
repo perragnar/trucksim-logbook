@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { formatDateTime } from '$lib/format';
+	import GameFlag from '$lib/components/GameFlag.svelte';
 	import { gameFilter } from '$lib/gameFilter.svelte';
 	let { data } = $props();
 
@@ -130,40 +131,42 @@
 				<thead>
 					<tr>
 						{@render sortth('Delivered', 'deliveredAt')}
-						{@render sortth('Game', 'game')}
+						{@render sortth('Game', 'game', 'col-game')}
 						{@render sortth('From', 'fromCity')}
 						{@render sortth('To', 'toCity')}
 						{@render sortth('Cargo', 'cargo')}
-						{@render sortth('Damage', 'cargoDamage')}
+						{@render sortth('Damage', 'cargoDamage', 'col-damage')}
 						{@render sortth('Distance', 'distanceKm', 'num')}
-						{@render sortth('Taken', 'takenAt')}
+						{@render sortth('Taken', 'takenAt', 'col-taken')}
 					</tr>
 				</thead>
 				<tbody>
 					{#each paged as j (j.id)}
 						<tr>
 							<td class="nowrap">{j.deliveredAt ? fmt(j.deliveredAt) : '—'}</td>
-							<td><span class="tag">{j.game}</span></td>
+							<td class="col-game"><GameFlag game={j.game} /></td>
 							<td>{j.fromCity ?? '—'}{#if j.fromCompany}<span class="muted"> · {j.fromCompany}</span>{/if}</td>
 							<td>{j.toCity ?? '—'}{#if j.toCompany}<span class="muted"> · {j.toCompany}</span>{/if}</td>
 							<td>{j.cargo ?? '—'}</td>
-							<td><span class:dmg={damageNum(j.cargoDamage) > 0}>{j.cargoDamage ?? '—'}</span></td>
+							<td class="col-damage"><span class:dmg={damageNum(j.cargoDamage) > 0}>{j.cargoDamage ?? '—'}</span></td>
 							<td class="num nowrap">{dist(j.distanceKm)}</td>
-							<td class="nowrap muted">{j.takenAt ? fmt(j.takenAt) : '—'}</td>
+							<td class="col-taken nowrap muted">{j.takenAt ? fmt(j.takenAt) : '—'}</td>
 						</tr>
 					{/each}
 				</tbody>
 			</table>
 
 			<div class="pager">
-				<div class="muted">Showing {rangeStart}–{rangeEnd} of {sorted.length}</div>
-				<div class="pagectrls">
+				<div class="pagetop">
+					<span class="muted">Showing {rangeStart}–{rangeEnd} of {sorted.length}</span>
 					<span class="psize muted">
 						Per page
 						<select bind:value={pageSize} aria-label="Rows per page">
 							{#each PAGE_SIZES as n}<option value={n}>{n}</option>{/each}
 						</select>
 					</span>
+				</div>
+				<div class="pgnav">
 					<button class="btn-ghost btn-sm" disabled={page <= 1} onclick={() => (page -= 1)}
 						>‹ Prev</button
 					>
@@ -263,7 +266,12 @@
 		flex-wrap: wrap;
 		font-size: 0.9rem;
 	}
-	.pagectrls {
+	.pagetop {
+		display: flex;
+		align-items: center;
+		gap: 1.25rem;
+	}
+	.pgnav {
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
@@ -287,5 +295,34 @@
 	}
 	.synchistory summary h2 {
 		display: inline;
+	}
+
+	/* Phones: drop the lower-priority columns and let wide tables scroll. */
+	@media (max-width: 720px) {
+		.col-game,
+		.col-damage,
+		.col-taken {
+			display: none;
+		}
+		table {
+			display: block;
+			overflow-x: auto;
+		}
+		/* Stack the pager and give the controls room + bigger tap targets. */
+		.pager {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0.85rem;
+		}
+		.pagetop {
+			justify-content: space-between;
+		}
+		.pgnav {
+			justify-content: space-between;
+		}
+		.pgnav .btn-sm {
+			padding: 0.45rem 0.9rem;
+			font-size: 0.9rem;
+		}
 	}
 </style>

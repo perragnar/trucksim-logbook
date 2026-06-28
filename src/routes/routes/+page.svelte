@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
+	import GameFlag from '$lib/components/GameFlag.svelte';
 	import { gameFilter } from '$lib/gameFilter.svelte';
 	let { data, form } = $props();
 	// Read-only published snapshot: no server, so hide all the write controls.
@@ -88,7 +89,7 @@
 						<tr>
 							<td>
 								<strong>{j.fromCity}</strong> → <strong>{j.toCity}</strong>
-								<span class="tag">{j.game}</span>
+								<GameFlag game={j.game} />
 							</td>
 							<td>{j.cargo ?? '—'}</td>
 							<td>{dist(j.distanceKm)}</td>
@@ -122,8 +123,8 @@
 				<tr>
 					<th>Route</th>
 					<th>Cargo</th>
-					<th>Truck</th>
-					<th>Game</th>
+					<th class="col-truck">Truck</th>
+					<th class="col-game">Game</th>
 					<th>Notes</th>
 					{#if !STATIC}<th></th>{/if}
 				</tr>
@@ -139,8 +140,8 @@
 								>{/if}
 						</td>
 						<td>{r.cargo ?? '—'}</td>
-						<td>{r.truck ?? '—'}</td>
-						<td>{r.game ?? '—'}</td>
+						<td class="col-truck">{r.truck ?? '—'}</td>
+						<td class="col-game">{#if r.game}<GameFlag game={r.game} />{:else}—{/if}</td>
 						{#if STATIC}
 							<td class="muted">{r.notes ?? ''}</td>
 						{:else}
@@ -207,5 +208,24 @@
 	}
 	.ok {
 		color: var(--global);
+	}
+
+	/* Phones: stack the form, drop low-priority columns, let tables scroll. */
+	@media (max-width: 720px) {
+		.form .row2,
+		.form .row3 {
+			grid-template-columns: 1fr;
+		}
+		table {
+			display: block;
+			overflow-x: auto;
+		}
+		.col-truck,
+		.col-game {
+			display: none;
+		}
+		.noteform input {
+			min-width: 6rem;
+		}
 	}
 </style>

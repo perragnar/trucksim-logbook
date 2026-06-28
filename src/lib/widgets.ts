@@ -27,6 +27,7 @@ export const WIDGETS: WidgetDef[] = [
 	{ id: 'geo-reach', title: 'Geographic reach', description: 'Northern/southern/eastern/western extremes.', wide: true, perGame: true },
 	{ id: 'recent-activity', title: 'Recent activity', description: 'Last 7 / 30 day delivery counts.' },
 	{ id: 'biggest-hauls', title: 'Biggest hauls', description: 'Your longest deliveries.' },
+	{ id: 'latest-hauls', title: 'Latest hauls', description: 'Your most recent deliveries.', wide: true },
 	{ id: 'game-split', title: 'Game split', description: 'ETS2 vs ATS delivery share (All view only).' },
 	{ id: 'delivery-quality', title: 'Delivery quality', description: 'Clean vs damaged and clean streaks.' },
 	{ id: 'damaged-cargo', title: 'Most-damaged cargo', description: 'Which cargo gets damaged most.' },

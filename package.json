@@ -14,6 +14,7 @@
 		"build:geo": "tsx scripts/build-geo.ts",
 		"build:cities": "tsx scripts/build-cities.ts",
 		"steam:check": "tsx scripts/steam-check.ts",
+		"db:dedupe": "tsx scripts/dedupe-jobs.ts",
 		"db:push": "drizzle-kit push",
 		"db:studio": "drizzle-kit studio",
 		"prepare": "svelte-kit sync || echo ''",
