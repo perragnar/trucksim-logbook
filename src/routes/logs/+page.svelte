@@ -145,8 +145,8 @@
 						<tr>
 							<td class="nowrap">{j.deliveredAt ? fmt(j.deliveredAt) : '—'}</td>
 							<td class="col-game"><GameFlag game={j.game} /></td>
-							<td>{j.fromCity ?? '—'}{#if j.fromCompany}<span class="muted"> · {j.fromCompany}</span>{/if}</td>
-							<td>{j.toCity ?? '—'}{#if j.toCompany}<span class="muted"> · {j.toCompany}</span>{/if}</td>
+							<td>{j.fromCity ?? '—'}{#if j.fromCode}{' '}<span class="muted">({j.fromCode})</span>{/if}{#if j.fromCompany}{' '}<span class="muted">· {j.fromCompany}</span>{/if}</td>
+							<td>{j.toCity ?? '—'}{#if j.toCode}{' '}<span class="muted">({j.toCode})</span>{/if}{#if j.toCompany}{' '}<span class="muted">· {j.toCompany}</span>{/if}</td>
 							<td>{j.cargo ?? '—'}</td>
 							<td class="col-damage"><span class:dmg={damageNum(j.cargoDamage) > 0}>{j.cargoDamage ?? '—'}</span></td>
 							<td class="num nowrap">{dist(j.distanceKm)}</td>

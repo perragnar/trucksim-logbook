@@ -128,6 +128,15 @@ function jobRegions(raw: string | null): string[] {
 	return [regionOf(f['Origin']), regionOf(f['Destination'])].filter(Boolean);
 }
 
+/** Short origin/destination region codes for a job (country for ETS2, state for ATS). */
+export function jobCodes(j: { game: string; raw: string | null }) {
+	const f = rawFields(j.raw);
+	return {
+		fromCode: regionCode(j.game, regionOf(f['Origin'])),
+		toCode: regionCode(j.game, regionOf(f['Destination']))
+	};
+}
+
 /** Delivery duration in minutes from Taken → Completed, or null if not parseable. */
 function jobDurationMin(raw: string | null): number | null {
 	const f = rawFields(raw);
