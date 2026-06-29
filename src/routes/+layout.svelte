@@ -254,7 +254,7 @@
 	.gametoggle :global(.gt-active) {
 		background: var(--accent);
 		border-color: var(--accent);
-		color: #1a1207;
+		color: var(--on-accent);
 	}
 	.actions {
 		display: flex;

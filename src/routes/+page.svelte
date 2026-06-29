@@ -1092,7 +1092,7 @@
 		top: 4px;
 		right: 8px;
 		background: var(--accent);
-		color: #1a1207;
+		color: var(--on-accent);
 		font-size: 0.7rem;
 		font-weight: 700;
 		border-radius: 999px;
