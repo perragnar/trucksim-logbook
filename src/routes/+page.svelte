@@ -1088,6 +1088,8 @@
 	}
 	.badge {
 		position: relative;
+		display: flex;
+		flex-direction: column;
 		text-align: center;
 		padding: 0.5rem;
 		border-radius: 8px;
@@ -1120,6 +1122,8 @@
 		font-size: 0.7rem;
 		color: var(--muted);
 		margin-top: 0.25rem;
+		/* Guarantees a gap above the bottom-pinned progress bar. */
+		margin-bottom: 0.5rem;
 		line-height: 1.2;
 	}
 	/* Small progress bar under an in-progress achievement card. */
@@ -1127,7 +1131,8 @@
 		width: 90%;
 		max-width: 90px;
 		height: 9px;
-		margin: 0.4rem auto 0;
+		/* auto top margin pushes the bar (and its number) to the card's bottom. */
+		margin: auto auto 0;
 		background: color-mix(in srgb, var(--accent-2) 25%, transparent);
 		border: 1px solid var(--accent-2);
 		border-radius: 999px;
