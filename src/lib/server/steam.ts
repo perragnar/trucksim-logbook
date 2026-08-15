@@ -33,6 +33,8 @@ export interface SteamAchievement {
 	unlockedAt: number | null; // unix ms
 	globalPercent: number | null; // % of all players who have it (rarity)
 	hidden: boolean; // hidden/secret achievement
+	progressCurrent: number | null; // player's current value toward the goal, if tracked
+	progressMax: number | null; // goal target, parsed from the description ("at least N")
 }
 
 export interface SteamGameAchievements {
@@ -49,6 +51,38 @@ export interface SteamProgress {
 }
 
 const BASE = 'https://api.steampowered.com';
+
+// Steam's Web API doesn't expose an achievement's progress target, so we derive
+// it from the description. Add an entry here (keyed by Steam apiname) for any the
+// heuristic below gets wrong.
+const PROGRESS_MAX_OVERRIDE: Record<string, number> = {};
+
+/**
+ * Best-effort progress goal for an achievement, from its description.
+ *  1. an explicit override, else
+ *  2. "… at least N …" (the strongest signal), else
+ *  3. the smallest number ≥ the player's current progress — the tighter bound is
+ *     almost always what the "-progress" counter is tracking (e.g. "250 tons on
+ *     5 consecutive jobs" with progress 3 → 5, not 250).
+ */
+function parseTarget(desc: string | null, apiname: string, current: number | null): number | null {
+	if (apiname in PROGRESS_MAX_OVERRIDE) return PROGRESS_MAX_OVERRIDE[apiname];
+	if (!desc) return null;
+
+	const atLeast = desc.match(/at least\s+([\d,]+)/i);
+	if (atLeast) {
+		const n = Number(atLeast[1].replace(/,/g, ''));
+		if (Number.isFinite(n) && n > 1) return n;
+	}
+
+	const nums = [...desc.matchAll(/(\d[\d,]*)/g)]
+		.map((m) => Number(m[1].replace(/,/g, '')))
+		.filter((n) => Number.isFinite(n) && n > 1);
+	if (!nums.length) return null;
+	const cur = current ?? 0;
+	const atOrAbove = nums.filter((n) => n >= cur).sort((a, b) => a - b);
+	return atOrAbove.length ? atOrAbove[0] : Math.max(...nums);
+}
 
 async function api(path: string, cfg: SteamConfig, params: Record<string, string>) {
 	const url = new URL(BASE + path);
@@ -141,17 +175,35 @@ async function fetchAchievements(cfg: SteamConfig): Promise<SteamGameAchievement
 				// rarity optional
 			}
 
+			// Per-achievement progress — GetUserStatsForGame exposes a
+			// "<apiname>-progress" stat holding the player's current value.
+			let prog = new Map<string, number>();
+			try {
+				const us = (await api('/ISteamUserStats/GetUserStatsForGame/v2/', cfg, {
+					appid,
+					steamid: cfg.steamId!
+				})) as { playerstats?: { stats?: { name: string; value: number }[] } };
+				prog = new Map((us.playerstats?.stats ?? []).map((s) => [s.name, s.value]));
+			} catch {
+				// progress optional
+			}
+
 			const items: SteamAchievement[] = pAch.map((a) => {
 				const sa = schema.get(a.apiname);
+				const description = sa?.description || a.description || null;
+				const cur = prog.get(`${a.apiname}-progress`);
+				const max = cur != null ? parseTarget(description, a.apiname, cur) : null;
 				return {
 					name: sa?.displayName || a.name || a.apiname,
-					description: sa?.description || a.description || null,
+					description,
 					icon: sa?.icon || null,
 					iconGray: sa?.icongray || null,
 					unlocked: a.achieved === 1,
 					unlockedAt: a.achieved === 1 && a.unlocktime ? a.unlocktime * 1000 : null,
 					globalPercent: pct.get(a.apiname) ?? null,
-					hidden: sa?.hidden === 1
+					hidden: sa?.hidden === 1,
+					progressCurrent: cur ?? null,
+					progressMax: max
 				};
 			});
 			out.push({ game, earned: items.filter((i) => i.unlocked).length, total: items.length, items });

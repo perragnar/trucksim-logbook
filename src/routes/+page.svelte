@@ -542,6 +542,16 @@
 							{#if ac.image}<img src={ac.image} alt={ac.name} />{/if}
 							{#if ac.level && ac.unlocked}<span class="lvl">{ac.level}</span>{/if}
 							<div class="bname">{ac.name}</div>
+							{#if !ac.unlocked && ac.progress}
+								{@const cur = Number(ac.progress.split('/')[0].replace(/,/g, ''))}
+								{@const tot = Number(ac.progress.split('/')[1].replace(/,/g, ''))}
+								{#if tot}
+									<div class="bprog" title={ac.progress}>
+										<div class="bprogfill" style="width:{Math.min(100, (cur / tot) * 100)}%"></div>
+									</div>
+									<div class="bprognum">{ac.progress}</div>
+								{/if}
+							{/if}
 							<div class="atip">
 								<div class="atip-head">
 									{ac.name}
@@ -634,6 +644,12 @@
 			<span class="rarity">{ac.globalPercent.toFixed(1)}%</span>
 		{/if}
 		<div class="bname">{ac.name}</div>
+		{#if !ac.unlocked && ac.progressCurrent != null && ac.progressMax}
+			<div class="bprog" title="{ac.progressCurrent.toLocaleString()}/{ac.progressMax.toLocaleString()}">
+				<div class="bprogfill" style="width:{Math.min(100, (ac.progressCurrent / ac.progressMax) * 100)}%"></div>
+			</div>
+			<div class="bprognum">{ac.progressCurrent.toLocaleString()}/{ac.progressMax.toLocaleString()}</div>
+		{/if}
 		<div class="atip">
 			<div class="atip-head">
 				{ac.name}
@@ -917,8 +933,10 @@
 	}
 	.pbar {
 		background: var(--panel-2);
+		border: 1px solid var(--accent);
 		border-radius: 999px;
-		height: 8px;
+		height: 12px;
+		padding: 1px;
 		overflow: hidden;
 		margin-top: 0.35rem;
 	}
@@ -1103,6 +1121,30 @@
 		color: var(--muted);
 		margin-top: 0.25rem;
 		line-height: 1.2;
+	}
+	/* Small progress bar under an in-progress achievement card. */
+	.bprog {
+		width: 90%;
+		max-width: 90px;
+		height: 9px;
+		margin: 0.4rem auto 0;
+		background: color-mix(in srgb, var(--accent-2) 25%, transparent);
+		border: 1px solid var(--accent-2);
+		border-radius: 999px;
+		padding: 1px;
+		overflow: hidden;
+	}
+	.bprogfill {
+		height: 100%;
+		background: var(--accent-2);
+		border-radius: 999px;
+	}
+	.bprognum {
+		font-size: 0.62rem;
+		color: var(--muted);
+		text-align: center;
+		margin-top: 0.15rem;
+		font-variant-numeric: tabular-nums;
 	}
 	.atip {
 		position: absolute;

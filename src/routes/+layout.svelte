@@ -52,7 +52,8 @@
 		{ href: '/', label: 'Dashboard' },
 		{ href: '/map', label: 'Map' },
 		{ href: '/logs', label: 'Logs' },
-		{ href: '/routes', label: 'Routes' }
+		{ href: '/routes', label: 'Routes' },
+		{ href: '/achievements', label: 'Achievements' }
 	];
 
 	async function sync() {
@@ -277,9 +278,17 @@
 		flex-shrink: 0;
 	}
 
-	/* Phones: brand shrinks to just the truck; the game switcher + hamburger stay
-	   in the top bar; nav and actions drop down when the menu is open. */
-	@media (max-width: 720px) {
+	/* Mid widths: drop the "TruckSim Logbook" wordmark (keep the truck) so the
+	   full horizontal nav + actions still fit before we fall back to the menu. */
+	@media (max-width: 1024px) {
+		.brandtext {
+			display: none;
+		}
+	}
+
+	/* Phones / narrow: brand shrinks to just the truck; the game switcher +
+	   hamburger stay in the top bar; nav and actions drop down when open. */
+	@media (max-width: 860px) {
 		.bar {
 			flex-wrap: wrap;
 			gap: 0.6rem;
