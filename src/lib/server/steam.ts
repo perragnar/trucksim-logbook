@@ -151,13 +151,24 @@ async function fetchAchievements(cfg: SteamConfig): Promise<SteamGameAchievement
 			const pAch = player.playerstats?.achievements ?? [];
 			if (!player.playerstats?.success || !pAch.length) continue;
 
-			// Schema gives display names + icon URLs + hidden flag (best-effort).
+			// Schema gives display names + icon URLs + hidden flag (best-effort), plus
+			// the stat list — a "<apiname>-progress" stat marks a progress-tracked
+			// achievement (present even when the player's value is still 0).
 			let schema = new Map<string, { displayName?: string; description?: string; icon?: string; icongray?: string; hidden?: number }>();
+			const progressStats = new Set<string>();
 			try {
 				const s = (await api('/ISteamUserStats/GetSchemaForGame/v2/', cfg, { appid, l: 'english' })) as {
-					game?: { availableGameStats?: { achievements?: { name: string; displayName?: string; description?: string; icon?: string; icongray?: string; hidden?: number }[] } };
+					game?: {
+						availableGameStats?: {
+							achievements?: { name: string; displayName?: string; description?: string; icon?: string; icongray?: string; hidden?: number }[];
+							stats?: { name: string }[];
+						};
+					};
 				};
 				schema = new Map((s.game?.availableGameStats?.achievements ?? []).map((a) => [a.name, a]));
+				for (const st of s.game?.availableGameStats?.stats ?? []) {
+					if (st.name.endsWith('-progress')) progressStats.add(st.name);
+				}
 			} catch {
 				// icons/names optional
 			}
@@ -191,7 +202,10 @@ async function fetchAchievements(cfg: SteamConfig): Promise<SteamGameAchievement
 			const items: SteamAchievement[] = pAch.map((a) => {
 				const sa = schema.get(a.apiname);
 				const description = sa?.description || a.description || null;
-				const cur = prog.get(`${a.apiname}-progress`);
+				// Progress-tracked achievements are known from the schema; the player
+				// value is omitted while still at its 0 default, so fall back to 0.
+				const statName = `${a.apiname}-progress`;
+				const cur = progressStats.has(statName) ? (prog.get(statName) ?? 0) : null;
 				const max = cur != null ? parseTarget(description, a.apiname, cur) : null;
 				return {
 					name: sa?.displayName || a.name || a.apiname,
